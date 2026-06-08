@@ -8,76 +8,75 @@ use Valorin\Random\Random;
 
 class ShuffleTest extends TestCase
 {
+    use Assertions;
+
     public function testShuffleString()
     {
-        for ($i = 0; $i < 10; $i++) {
-            $string = 'original';
-            $shuffled = Random::shuffle($string);
+        $string = 'original';
+        $shuffled = Random::shuffle($string);
 
-            $this->assertIsString($shuffled);
-            $this->assertEquals(strlen($string), strlen($shuffled));
-            $this->assertNotSame($string, $shuffled);
-            $this->assertNotSame(Random::shuffle($string), $shuffled);
-        }
+        $this->assertIsString($shuffled);
+        $this->assertEquals(strlen($string), strlen($shuffled));
+
+        $this->assertVaries($string, function () use ($string) {
+            return Random::shuffle($string);
+        }, 'Shuffling should not always reproduce the original order.');
     }
 
     public function testShuffleArrayWithoutPreservingKeys()
     {
-        for ($i = 0; $i < 10; $i++) {
-            $array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
-            $shuffled = Random::shuffle($array, $preserveKeys = false);
+        $array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+        $shuffled = Random::shuffle($array, $preserveKeys = false);
 
-            $this->assertIsArray($shuffled);
-            $this->assertEquals(count($array), count($shuffled));
-            $this->assertNotSame($array, $shuffled);
-            $this->assertNotSame(Random::shuffle($array), $shuffled);
-            $this->assertSame(range(0, 8), array_keys($shuffled), 'Keys were not re-indexed.');
-        }
+        $this->assertIsArray($shuffled);
+        $this->assertEquals(count($array), count($shuffled));
+        $this->assertSame(range(0, 8), array_keys($shuffled), 'Keys were not re-indexed.');
+
+        $this->assertVaries($array, function () use ($array) {
+            return Random::shuffle($array, false);
+        }, 'Shuffling should not always reproduce the original order.');
     }
 
     public function testShuffleArrayPreservingKeys()
     {
-        for ($i = 0; $i < 10; $i++) {
-            $array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
-            $shuffled = Random::shuffle($array, $preserveKeys = true);
+        $array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+        $shuffled = Random::shuffle($array, $preserveKeys = true);
 
-            $this->assertNotSame($array, $shuffled);
-            $this->assertNotSame(Random::shuffle($array), $shuffled);
-            $this->assertNotSame(range(0, 8), array_keys($shuffled), 'Keys were re-indexed.');
-
-            for ($j = 0; $j < 9; $j++) {
-                $this->assertSame($array[$j], $shuffled[$j], "Key {$j} was not preserved.");
-            }
+        for ($j = 0; $j < 9; $j++) {
+            $this->assertSame($array[$j], $shuffled[$j], "Key {$j} was not preserved.");
         }
+
+        $this->assertVaries(range(0, 8), function () use ($array) {
+            return array_keys(Random::shuffle($array, true));
+        }, 'Shuffling should vary the order while preserving keys.');
     }
 
     public function testShuffleCollectionWithoutPreservingKey()
     {
-        for ($i = 0; $i < 10; $i++) {
-            $collection = new Collection(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']);
-            $shuffled = Random::shuffle($collection, $preserveKeys = false);
+        $collection = new Collection(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']);
+        $shuffled = Random::shuffle($collection, $preserveKeys = false);
 
-            $this->assertInstanceOf(Collection::class, $shuffled);
-            $this->assertNotSame($collection->toArray(), $shuffled->toArray());
-            $this->assertNotSame(Random::shuffle($collection)->toArray(), $shuffled->toArray());
-            $this->assertSame(range(0, 8), $shuffled->keys()->toArray(), 'Keys were not re-indexed.');
-        }
+        $this->assertInstanceOf(Collection::class, $shuffled);
+        $this->assertSame(range(0, 8), $shuffled->keys()->toArray(), 'Keys were not re-indexed.');
+
+        $this->assertVaries($collection->toArray(), function () use ($collection) {
+            return Random::shuffle($collection, false)->toArray();
+        }, 'Shuffling should not always reproduce the original order.');
     }
 
     public function testShuffleCollectionPreservingKey()
     {
-        for ($i = 0; $i < 10; $i++) {
-            $collection = new Collection(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']);
-            $shuffled = Random::shuffle($collection, $preserveKeys = true);
+        $collection = new Collection(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']);
+        $shuffled = Random::shuffle($collection, $preserveKeys = true);
 
-            $this->assertInstanceOf(Collection::class, $shuffled);
-            $this->assertNotSame($collection->toArray(), $shuffled->toArray());
-            $this->assertNotSame(Random::shuffle($collection)->toArray(), $shuffled->toArray());
-            $this->assertNotSame(range(0, 8), $shuffled->keys(), 'Keys were re-indexed.');
+        $this->assertInstanceOf(Collection::class, $shuffled);
 
-            for ($j = 0; $j < 9; $j++) {
-                $this->assertSame($collection[$j], $shuffled[$j], "Key {$j} was not preserved.");
-            }
+        for ($j = 0; $j < 9; $j++) {
+            $this->assertSame($collection[$j], $shuffled[$j], "Key {$j} was not preserved.");
         }
+
+        $this->assertVaries(range(0, 8), function () use ($collection) {
+            return Random::shuffle($collection, true)->keys()->toArray();
+        }, 'Shuffling should vary the order while preserving keys.');
     }
 }

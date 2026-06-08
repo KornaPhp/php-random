@@ -7,6 +7,8 @@ use Valorin\Random\Random;
 
 class NumberTest extends TestCase
 {
+    use Assertions;
+
     public function testNumbersWithinLimits()
     {
         for ($i = 0; $i < 10; $i++) {
@@ -20,11 +22,8 @@ class NumberTest extends TestCase
 
     public function testDifferentNumbers()
     {
-        for ($i = 0; $i < 10; $i++) {
-            $this->assertNotEquals(
-                Random::number(1, 100000),
-                Random::number(1, 100000)
-            );
-        }
+        $this->assertVaries(Random::number(1, 100000), function () {
+            return Random::number(1, 100000);
+        }, 'Random::number() returned the same value on every attempt.');
     }
 }
