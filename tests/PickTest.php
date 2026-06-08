@@ -69,7 +69,9 @@ class PickTest extends TestCase
         $this->assertIsArray($picked);
         $this->assertCount(1, $picked);
         $this->assertContains($picked[0], $array);
-        $this->assertNotSame(Random::pick($array, 1), $picked, 'Picks should be different. (Low chance of false positives.)');
+        $this->assertVaries($picked, function () use ($array) {
+            return Random::pick($array, 1);
+        }, 'Picks should vary across draws.');
     }
 
     public function testPickMultipleFromArray()
@@ -79,7 +81,9 @@ class PickTest extends TestCase
 
         $this->assertIsArray($picked);
         $this->assertCount(3, $picked);
-        $this->assertNotSame(Random::pick($array, 3), $picked, 'Picks should be different. (Low chance of false positives.)');
+        $this->assertVaries($picked, function () use ($array) {
+            return Random::pick($array, 3);
+        }, 'Picks should vary across draws.');
     }
 
     public function testPickSingleFromCollection()
@@ -89,7 +93,9 @@ class PickTest extends TestCase
 
         $this->assertInstanceOf(Collection::class, $picked);
         $this->assertCount(1, $picked);
-        $this->assertNotSame(Random::pick($collection, 1)->toArray(), $picked->toArray(), 'Picks should be different. (Low chance of false positives.)');
+        $this->assertVaries($picked->toArray(), function () use ($collection) {
+            return Random::pick($collection, 1)->toArray();
+        }, 'Picks should vary across draws.');
     }
 
     public function testPickMultipleFromCollection()
@@ -99,7 +105,9 @@ class PickTest extends TestCase
 
         $this->assertInstanceOf(Collection::class, $picked);
         $this->assertCount(3, $picked);
-        $this->assertNotSame(Random::pick($collection, 3)->toArray(), $picked->toArray(), 'Picks should be different. (Low chance of false positives.)');
+        $this->assertVaries($picked->toArray(), function () use ($collection) {
+            return Random::pick($collection, 3)->toArray();
+        }, 'Picks should vary across draws.');
     }
 
     public function testPickOneFromArray()
@@ -109,7 +117,9 @@ class PickTest extends TestCase
 
         $this->assertIsString($picked);
         $this->assertContains($picked, $array);
-        $this->assertNotSame(Random::pickOne($array), $picked, 'Picks should be different. (Low chance of false positives.)');
+        $this->assertVaries($picked, function () use ($array) {
+            return Random::pickOne($array);
+        }, 'Picks should vary across draws.');
     }
 
     public function testPickOneFromString()
@@ -120,7 +130,9 @@ class PickTest extends TestCase
         $this->assertIsString($picked);
         $this->assertEquals(1, strlen($picked));
         $this->assertStringContainsString($picked, $string);
-        $this->assertNotSame(Random::pickOne($string), $picked, 'Picks should be different. (Low chance of false positives.)');
+        $this->assertVaries($picked, function () use ($string) {
+            return Random::pickOne($string);
+        }, 'Picks should vary across draws.');
     }
 
     public function testPickOneFromCollection()
@@ -130,6 +142,8 @@ class PickTest extends TestCase
 
         $this->assertIsString($picked);
         $this->assertTrue($collection->contains($picked));
-        $this->assertNotSame(Random::pickOne($collection), $picked, 'Picks should be different. (Low chance of false positives.)');
+        $this->assertVaries($picked, function () use ($collection) {
+            return Random::pickOne($collection);
+        }, 'Picks should vary across draws.');
     }
 }
